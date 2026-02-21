@@ -8,9 +8,12 @@ const htmlToText = require('nodemailer-html-to-text').htmlToText;
 const SMTPTransport = require('nodemailer-smtp-transport');
 const StubTransport = require('nodemailer-stub-transport');
 
-const transportEngine = process.env.NODE_ENV === 'test'
-  ? new StubTransport()
-  : new SMTPTransport({
+const useSmtpTransport = process.env.NODE_ENV === 'production'
+  && !!config.mailer.user
+  && !!config.mailer.password;
+
+const transportEngine = useSmtpTransport
+  ? new SMTPTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,
@@ -18,7 +21,8 @@ const transportEngine = process.env.NODE_ENV === 'test'
       user: config.mailer.user,
       pass: config.mailer.password,
     },
-  });
+  })
+  : new StubTransport();
 
 const transport = nodemailer.createTransport(transportEngine);
 
@@ -49,7 +53,7 @@ module.exports = async function sendMail(options) {
     html: juice(html),
     from: {
       name: 'Магазин',
-      address: `${config.mailer.user}@gmail.com`,
+      address: config.mailer.user ? `${config.mailer.user}@gmail.com` : 'noreply@example.com',
     },
     to: {
       name: options.to.name,

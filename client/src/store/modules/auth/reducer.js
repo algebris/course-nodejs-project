@@ -67,11 +67,15 @@ export default function reducer(state = initialState, action) {
         registration: {...initialState.registration, processing: false, complete: true,}
       };
     case RegisterFailure:
+      const registerErrors = action.errors && typeof action.errors === 'object'
+        ? action.errors
+        : {common: 'Не удалось зарегистрироваться'};
+
       return {
         ...state,
         registration: {
           ...initialState.registration,
-          errors: Object.keys(action.errors).map(key => action.errors[key]),
+          errors: Object.keys(registerErrors).map(key => registerErrors[key]),
           processing: false
         }
       };

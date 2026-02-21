@@ -32,7 +32,12 @@ export function register({email, displayName, password}) {
     }).then(response => {
       dispatch({type: RegisterSuccess});
     }).catch(error => {
-      dispatch({type: RegisterFailure, errors: error.response.data.errors});
+      const serverData = error && error.response ? error.response.data : null;
+      const errors = serverData && serverData.errors
+        ? serverData.errors
+        : {common: (serverData && serverData.error) || 'Не удалось зарегистрироваться'};
+
+      dispatch({type: RegisterFailure, errors});
     });
   }
 }
