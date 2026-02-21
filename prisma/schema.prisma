@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  displayName       String    @unique
+  verificationToken String?   @unique
+  passwordHash      String?
+  salt              String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  sessions          Session[]
+  orders            Order[]
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  lastVisit DateTime
+  createdAt DateTime @default(now())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([lastVisit])
+}
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  slug          String        @unique
+  title         String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  subcategories Subcategory[]
+}
+
+model Subcategory {
+  id         Int      @id @default(autoincrement())
+  slug       String   @unique
+  title      String
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products   Product[]
+
+  @@index([categoryId])
+}
+
+model Product {
+  id             Int          @id @default(autoincrement())
+  slug           String       @unique
+  title          String
+  description    String
+  price          Int
+  discount       Int          @default(0)
+  category       String?
+  subcategory    String
+  images         Json
+  rating         Int
+  reviews        Json
+  details        Json
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  subcategoryRef Subcategory  @relation(fields: [subcategory], references: [slug], onDelete: Restrict)
+  orders         Order[]
+
+  @@index([subcategory])
+  @@index([rating])
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  phone     String
+  address   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([productId])
+}

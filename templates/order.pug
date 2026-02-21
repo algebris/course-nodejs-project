@@ -1,0 +1,14 @@
+extends ./layout
+
+block body
+    h1 Подтверждение заказа
+    p Спасибо за заказ, оформленный в&nbsp;
+        a(href=href) нашем магазине
+    p Детали заказа
+    table
+        tr
+            th Товар
+            th Цена
+        tr
+            td= product
+            td= price
